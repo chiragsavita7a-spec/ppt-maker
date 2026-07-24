@@ -1,0 +1,9 @@
+flask
+werkzeug
+gunicorn
+anthropic
+pypdf
+python-docx
+requests
+pillow
+python-pptx
