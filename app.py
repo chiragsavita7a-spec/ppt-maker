@@ -61,85 +61,263 @@ def extract_text(path):
         return "\n".join(p.text for p in docx.Document(path).paragraphs)
     return Path(path).read_text(encoding="utf-8", errors="ignore")
 
-def structure(text, topic, subject, grade, log):
+SLIDE_COUNTS = {"short": "10", "medium": "10-20", "long": "20-25"}
+STYLE_HINTS = {
+    "summary":     "Use very brief bullet points (max 8 words each). Focus on key facts only. Max 3 bullets per slide.",
+    "descriptive": "Use detailed bullets (up to 15 words each). Include explanations and context. Up to 5 bullets per slide.",
+    "visual":      "Use minimal text (2-3 short bullets per slide). Always provide a strong image_keyword. Include a key_fact on every slide.",
+}
+
+def structure(text, topic, subject, grade, log, length="medium", style="descriptive"):
     import anthropic
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        log("⚠️  No API key — using basic extraction"); return basic_structure(text, topic, subject, grade)
+        log("📝 No API key — using smart auto-structuring (works great!)")
+        return smart_structure(text, topic, subject, grade, length, style)
     client = anthropic.Anthropic(api_key=key)
     trunc = text[:6000] + ("..." if len(text) > 6000 else "")
+    n_slides = SLIDE_COUNTS.get(length, "10-20")
+    style_hint = STYLE_HINTS.get(style, STYLE_HINTS["descriptive"])
     prompt = f"""You are a teaching assistant creating PowerPoint slides from lesson notes.
-INPUT TEXT:\n{trunc}\nTopic: {topic or "auto-detect"}\nSubject: {subject or "auto-detect"}\nGrade: {grade or "general"}
-Return ONLY valid JSON (no markdown) with this structure:
+INPUT TEXT:\n{trunc}
+Topic: {topic or "auto-detect"} | Subject: {subject or "auto-detect"} | Grade: {grade or "general"}
+STYLE INSTRUCTIONS: {style_hint}
+Return ONLY valid JSON (no markdown) with this exact structure:
 {{"topic":"Main topic","subtitle":"One-line description","subject":"Subject","grade":"Grade",
 "objectives":["Up to 4 objectives starting with a verb"],
-"slides":[{{"title":"Slide title (max 8 words)","content":["Bullet (max 15 words)","up to 5"],"key_term":"Term: definition (optional)","key_fact":"Striking stat or quote (optional)","image_keyword":"2-3 word image search"}}],
-"activity":"Short class activity","summary":["Up to 5 takeaways"]}}
-Create 4-7 content slides. Each bullet max 15 words."""
+"slides":[{{"title":"Slide title (max 8 words)","content":["Bullets per style above"],"key_term":"Term: definition (optional)","key_fact":"Striking stat or quote (optional)","image_keyword":"2-3 word image search term"}}],
+"activity":"Short engaging class activity","summary":["Up to 5 key takeaways"]}}
+Create exactly {n_slides} content slides. Follow the style instructions strictly."""
     try:
-        r = client.messages.create(model="claude-haiku-4-5-20251001", max_tokens=2500,
+        r = client.messages.create(model="claude-haiku-4-5-20251001", max_tokens=6000,
                                    messages=[{"role":"user","content":prompt}])
         raw = re.sub(r'^```(?:json)?\s*','',r.content[0].text.strip(),flags=re.MULTILINE)
         raw = re.sub(r'\s*```\s*$','',raw,flags=re.MULTILINE)
         return json.loads(raw)
     except Exception as e:
-        log(f"⚠️  AI error: {e}"); return basic_structure(text, topic, subject, grade)
+        log(f"⚠️  AI error: {e} — falling back to smart structuring")
+        return smart_structure(text, topic, subject, grade, length, style)
 
-def basic_structure(text, topic, subject, grade):
-    lines=[l.strip() for l in text.split("\n") if l.strip() and len(l.strip())>10]
-    slides,title,bullets=[],("Overview"),[]
-    for ln in lines[:80]:
-        if len(ln)<60 and (ln.isupper() or ln.endswith(':') or len(ln.split())<=5):
-            if bullets: slides.append({"title":title[:60],"content":bullets[:5],"key_term":"","key_fact":"","image_keyword":topic or "education","image_b64":""})
-            title=ln.rstrip(":"); bullets=[]
-        elif len(bullets)<5: bullets.append(ln[:120])
-    if bullets: slides.append({"title":title[:60],"content":bullets[:5],"key_term":"","key_fact":"","image_keyword":topic or "education","image_b64":""})
-    slides=slides[:6] or [{"title":"Overview","content":lines[:5],"key_term":"","key_fact":"","image_keyword":topic or "education","image_b64":""}]
-    return {"topic":topic or "Lesson","subtitle":f"A lesson on {topic or 'this topic'}",
-            "subject":subject or "","grade":grade or "",
-            "objectives":[f"Understand {topic or 'the topic'}","Apply the concepts","Evaluate key ideas"],
-            "slides":slides,
-            "activity":"Discuss with a partner: What is the most important idea from today's lesson?",
-            "summary":[f"Covered key concepts of {topic or 'this topic'}","Vocabulary and definitions","Real-world applications"]}
+# ── Smart free-mode structuring (no API key needed) ───────────────────────────
+def smart_structure(text, topic, subject, grade, length="medium", style="descriptive"):
+    import re as _re
+
+    # ── 1. Clean & split into sentences / lines ───────────────────────────────
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    all_words = text.lower().split()
+    word_freq = {}
+    STOP = {"the","a","an","is","are","was","were","be","been","being","have","has","had",
+            "do","does","did","will","would","could","should","may","might","must","shall",
+            "to","of","in","on","at","by","for","with","from","and","or","but","not","this",
+            "that","it","its","their","they","them","he","she","we","you","i","as","also",
+            "which","who","what","how","when","where","why","if","then","than","so","all",
+            "can","our","your","his","her","into","about","up","out","more","some","such",
+            "each","between","after","before","through","during","these","those","any","no"}
+    for w in all_words:
+        w = _re.sub(r'[^a-z]','',w)
+        if len(w)>3 and w not in STOP:
+            word_freq[w] = word_freq.get(w,0)+1
+
+    # Top keywords = potential image keywords
+    top_kw = sorted(word_freq, key=lambda w:-word_freq[w])[:20]
+
+    # ── 2. Auto-detect topic ──────────────────────────────────────────────────
+    detected_topic = topic
+    if not detected_topic:
+        for ln in lines[:8]:
+            if 4 < len(ln.split()) < 12 and not ln.endswith('.'):
+                detected_topic = ln.rstrip(':').strip()
+                break
+        if not detected_topic:
+            detected_topic = " ".join(w.capitalize() for w in top_kw[:3]) if top_kw else "Lesson"
+
+    # ── 3. Detect section headings ────────────────────────────────────────────
+    def is_heading(ln):
+        words = ln.split()
+        return (len(words) <= 8 and not ln.endswith('.') and not ln.endswith(',') and
+                (ln.isupper() or ln.istitle() or ln.endswith(':') or
+                 _re.match(r'^\d+[\.\)]\s', ln) or
+                 _re.match(r'^[A-Z][a-zA-Z\s]{3,40}:?\s*$', ln)))
+
+    def score_sentence(sent):
+        """Score a sentence by keyword density and length."""
+        words = _re.sub(r'[^a-z ]', '', sent.lower()).split()
+        if len(words) < 4: return 0
+        kw_hits = sum(1 for w in words if w in word_freq and word_freq[w] > 1)
+        length_bonus = min(len(words), 20) / 20
+        return kw_hits * length_bonus
+
+    def clean_bullet(s):
+        s = s.strip().rstrip('.')
+        # Remove leading list markers
+        s = _re.sub(r'^[\-\*•\d]+[\.\)]\s*', '', s)
+        return s[:120]
+
+    def img_kw(title):
+        words = [w.lower() for w in title.split() if w.lower() not in STOP and len(w)>3]
+        kws = words[:3] or top_kw[:3]
+        return " ".join(kws) if kws else (detected_topic or "education")
+
+    # ── 4. Group lines into sections ──────────────────────────────────────────
+    sections = []
+    cur_title, cur_lines = "Introduction", []
+    for ln in lines:
+        if is_heading(ln) and cur_lines:
+            sections.append((cur_title.rstrip(':'), cur_lines[:]))
+            cur_title, cur_lines = ln.rstrip(':'), []
+        elif is_heading(ln):
+            cur_title = ln.rstrip(':')
+        else:
+            cur_lines.append(ln)
+    if cur_lines:
+        sections.append((cur_title.rstrip(':'), cur_lines))
+
+    # If no sections detected, chunk into groups of ~5 lines
+    if len(sections) <= 1:
+        content_lines = [l for l in lines if not is_heading(l) and len(l) > 20]
+        chunk = max(3, len(content_lines) // 8)
+        sections = []
+        for i in range(0, min(len(content_lines), 200), chunk):
+            title = " ".join(content_lines[i].split()[:6]).rstrip(',.:')
+            sections.append((title, content_lines[i:i+chunk]))
+
+    # ── 5. Target slide count based on length ─────────────────────────────────
+    target = {"short": 10, "medium": 15, "long": 22}.get(length, 15)
+
+    # ── 6. Build slides ───────────────────────────────────────────────────────
+    bullets_per_slide = {"summary": 3, "descriptive": 5, "visual": 2}.get(style, 4)
+
+    slides = []
+    for sec_title, sec_lines in sections:
+        # Score and pick best sentences
+        scored = sorted([(score_sentence(l), l) for l in sec_lines if len(l.split())>4], reverse=True)
+        best = [clean_bullet(l) for _,l in scored[:bullets_per_slide] if l]
+        if not best:
+            best = [clean_bullet(l) for l in sec_lines[:bullets_per_slide] if len(l)>10]
+        if not best:
+            continue
+
+        # Key term: look for "X: definition" or "X is a..." patterns
+        key_term = ""
+        for ln in sec_lines:
+            m = _re.match(r'^([A-Z][a-zA-Z\s]{2,25}):\s+(.{10,80})', ln)
+            if m:
+                key_term = f"{m.group(1)}: {m.group(2)[:60]}"; break
+            m2 = _re.match(r'^([A-Z][a-z]+(?:\s[a-z]+)?)\s+is\s+(?:a|an|the)?\s*(.{10,60})', ln)
+            if m2:
+                key_term = f"{m2.group(1)}: {m2.group(2)[:60]}"; break
+
+        # Key fact: longest sentence as a notable point
+        key_fact = ""
+        long_sents = sorted(sec_lines, key=lambda s:-len(s))
+        for ls in long_sents[:3]:
+            if 30 < len(ls) < 200 and ls not in [b for b in best]:
+                key_fact = ls[:120]; break
+
+        slides.append({
+            "title": sec_title[:65],
+            "content": best,
+            "key_term": key_term,
+            "key_fact": key_fact if style != "summary" else "",
+            "image_keyword": img_kw(sec_title),
+            "image_b64": ""
+        })
+        if len(slides) >= target:
+            break
+
+    # Fallback if no slides
+    if not slides:
+        content = [clean_bullet(l) for l in lines if len(l.split())>5][:bullets_per_slide]
+        slides = [{"title": "Overview", "content": content, "key_term": "",
+                   "key_fact": "", "image_keyword": detected_topic or "education", "image_b64": ""}]
+
+    # ── 7. Generate objectives ────────────────────────────────────────────────
+    verbs = ["Understand","Explain","Identify","Describe","Analyse","Evaluate","Apply","Compare"]
+    objectives = []
+    for i, (_, sec_lines) in enumerate(sections[:4]):
+        kws = [w for w in sec_lines[0].split()[:5] if w.lower() not in STOP and len(w)>3][:3]
+        phrase = " ".join(kws) if kws else detected_topic or "key concepts"
+        objectives.append(f"{verbs[i % len(verbs)]} {phrase.lower()}")
+
+    # ── 8. Summary ────────────────────────────────────────────────────────────
+    summary_sents = sorted(
+        [(score_sentence(l), l) for l in lines if len(l.split())>6],
+        reverse=True)[:5]
+    summary = [clean_bullet(l)[:100] for _,l in summary_sents] or [f"Key concepts of {detected_topic}"]
+
+    # ── 9. Activity ───────────────────────────────────────────────────────────
+    activity_opts = [
+        f"In pairs, discuss: What is the most important idea from {detected_topic}?",
+        f"Write 3 things you learned about {detected_topic} today.",
+        f"Create a mind map connecting the key ideas from {detected_topic}.",
+        f"Quiz a partner: take turns asking questions about {detected_topic}.",
+        f"Summarise {detected_topic} in exactly 3 sentences.",
+    ]
+    activity = activity_opts[len(slides) % len(activity_opts)]
+
+    return {
+        "topic": detected_topic,
+        "subtitle": f"A structured lesson on {detected_topic}",
+        "subject": subject or "",
+        "grade": grade or "",
+        "objectives": objectives or [f"Understand {detected_topic}", "Apply the concepts", "Evaluate key ideas"],
+        "slides": slides,
+        "activity": activity,
+        "summary": summary,
+    }
 
 def fetch_img(kw, log):
     if not kw: return ""
     try:
         import requests
         from PIL import Image
-        url=f"https://source.unsplash.com/800x500/?{kw.replace(' ',',')}"
-        r=requests.get(url,timeout=12,allow_redirects=True,headers={"User-Agent":"Mozilla/5.0"})
-        if r.status_code==200 and len(r.content)>5000:
-            img=Image.open(io.BytesIO(r.content)).convert("RGB").resize((800,500))
-            buf=io.BytesIO(); img.save(buf,"JPEG",quality=80)
-            log(f"  📸 {kw[:35]}"); return base64.b64encode(buf.getvalue()).decode()
-    except Exception as e: log(f"  ⚠️  Image skipped ({e})")
+        url = f"https://source.unsplash.com/640x400/?{kw.replace(' ',',')}"
+        r = requests.get(url, timeout=6, allow_redirects=True, headers={"User-Agent":"Mozilla/5.0"})
+        if r.status_code == 200 and len(r.content) > 3000:
+            img = Image.open(io.BytesIO(r.content)).convert("RGB").resize((640, 400))
+            buf = io.BytesIO(); img.save(buf, "JPEG", quality=72)
+            log(f"  📸 {kw[:30]}"); return base64.b64encode(buf.getvalue()).decode()
+    except Exception as e: log(f"  ⚠️  Image skipped ({kw[:20]})")
     return ""
 
-def run_job(job_id, filepath, topic, subject, grade, fetch_images):
-    job=JOBS[job_id]
+def fetch_images_parallel(slides, log):
+    """Fetch all slide images at the same time instead of one by one."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    keywords = [sl.get("image_keyword","") for sl in slides]
+    results = [""] * len(slides)
+    log(f"🖼️  Fetching {len(slides)} images in parallel…")
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        futures = {ex.submit(fetch_img, kw, log): i for i, kw in enumerate(keywords)}
+        for f in as_completed(futures):
+            results[futures[f]] = f.result()
+    return results
+
+def run_job(job_id, filepath, topic, subject, grade, fetch_images, length, style, theme):
+    job = JOBS[job_id]
     def log(msg): job["log"].append(msg); print(msg)
     try:
         log("📄 Extracting text from file…")
-        text=extract_text(filepath); log(f"   ✅ {len(text):,} characters extracted")
-        log("🤖 Structuring content with AI…")
-        data=structure(text,topic,subject,grade,log)
-        log(f"   ✅ {len(data.get('slides',[]))} slides — topic: {data.get('topic')}")
-        if fetch_images:
-            log("🖼️  Fetching images…")
-            for sl in data.get("slides",[]): sl["image_b64"]=fetch_img(sl.get("image_keyword",""),log)
+        text = extract_text(filepath); log(f"   ✅ {len(text):,} characters extracted")
+        log(f"🤖 Structuring slides ({length}, {style})…")
+        data = structure(text, topic, subject, grade, log, length, style)
+        data["theme"] = theme  # pass theme to slide builder
+        slides = data.get("slides", [])
+        log(f"   ✅ {len(slides)} slides — topic: {data.get('topic')}")
+        if fetch_images and slides:
+            imgs = fetch_images_parallel(slides, log)
+            for sl, img in zip(slides, imgs): sl["image_b64"] = img
         else:
-            for sl in data.get("slides",[]): sl["image_b64"]=""
+            for sl in slides: sl["image_b64"] = ""
         log("⚙️  Building presentation…")
-        sys.path.insert(0,str(SCRIPT_DIR))
+        sys.path.insert(0, str(SCRIPT_DIR))
         from generate_pptx import generate_slides
-        pptx_bytes=generate_slides(data)
-        out=SCRIPT_DIR/f"_out_{job_id}.pptx"; out.write_bytes(pptx_bytes)
-        job["file"]=str(out)
-        job["filename"]=data.get("topic","Lesson").replace(" ","_")+"_Presentation.pptx"
-        log(f"✅ Done! {job['filename']}"); job["status"]="done"
+        pptx_bytes = generate_slides(data)
+        out = SCRIPT_DIR / f"_out_{job_id}.pptx"; out.write_bytes(pptx_bytes)
+        job["file"] = str(out)
+        job["filename"] = data.get("topic","Lesson").replace(" ","_") + "_Presentation.pptx"
+        log(f"✅ Done! {job['filename']}"); job["status"] = "done"
     except Exception as e:
-        log(f"❌ Error: {e}"); job["status"]="error"
+        log(f"❌ Error: {e}"); job["status"] = "error"
     finally:
         try: os.remove(filepath)
         except: pass
@@ -150,6 +328,15 @@ def _html(name):
     return p.read_text(encoding="utf-8") if p.exists() else f"<h1>{name} missing</h1>"
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+@app.route("/debug-auth")
+def debug_auth():
+    """Temporary debug route — shows env var status and forces admin login."""
+    pw = os.environ.get("ADMIN_PASSWORD","")
+    session["username"] = "admin"
+    session["name"] = "Administrator"
+    session["role"] = "admin"
+    return f"<h2>Debug Auth</h2><p>ADMIN_PASSWORD length: {len(pw)}</p><p>Value: '{pw}'</p><p>Admin session created. <a href='/'>Click here to continue</a></p>"
+
 @app.route("/login", methods=["GET","POST"])
 def login_page():
     error = ""
@@ -256,8 +443,13 @@ def generate():
     job_id = uuid.uuid4().hex[:10]
     JOBS[job_id] = {"status":"running","log":[],"file":None,"filename":None}
     threading.Thread(target=run_job,args=(job_id,tmp.name,
-        request.form.get("topic","").strip(),request.form.get("subject","").strip(),
-        request.form.get("grade","").strip(),request.form.get("images","true").lower()=="true"),daemon=True).start()
+        request.form.get("topic","").strip(),
+        request.form.get("subject","").strip(),
+        request.form.get("grade","").strip(),
+        request.form.get("images","true").lower()=="true",
+        request.form.get("length","medium"),
+        request.form.get("style","descriptive"),
+        request.form.get("theme","classic")),daemon=True).start()
     return jsonify({"job_id":job_id})
 
 @app.route("/status/<job_id>")

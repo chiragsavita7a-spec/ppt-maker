@@ -10,18 +10,70 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 import io, base64
 
-# ── Palette ───────────────────────────────────────────────────────────────────
+# ── Themes ────────────────────────────────────────────────────────────────────
+THEMES = {
+    "classic": dict(
+        PRIMARY=RGBColor(0xF9,0x61,0x67), SECONDARY=RGBColor(0x2F,0x3C,0x7E),
+        ACCENT=RGBColor(0xF9,0xE7,0x95),  LIGHT=RGBColor(0xFD,0xDD,0xE0),
+        BG=RGBColor(0xF4,0xF6,0xFB),      DARK=RGBColor(0x1A,0x1A,0x2E)),
+    "ocean": dict(
+        PRIMARY=RGBColor(0x00,0x77,0xB6), SECONDARY=RGBColor(0x03,0x04,0x5E),
+        ACCENT=RGBColor(0x90,0xE0,0xEF),  LIGHT=RGBColor(0xCA,0xF0,0xF8),
+        BG=RGBColor(0xF0,0xF7,0xFF),      DARK=RGBColor(0x03,0x04,0x5E)),
+    "forest": dict(
+        PRIMARY=RGBColor(0x2D,0x6A,0x4F), SECONDARY=RGBColor(0x1B,0x40,0x32),
+        ACCENT=RGBColor(0xD8,0xF3,0xDC),  LIGHT=RGBColor(0xB7,0xE4,0xC7),
+        BG=RGBColor(0xF0,0xFB,0xF2),      DARK=RGBColor(0x08,0x1C,0x15)),
+    "royal": dict(
+        PRIMARY=RGBColor(0x7B,0x2D,0x8B), SECONDARY=RGBColor(0x4A,0x00,0x72),
+        ACCENT=RGBColor(0xF9,0xE7,0x95),  LIGHT=RGBColor(0xE9,0xC4,0xF0),
+        BG=RGBColor(0xFB,0xF0,0xFF),      DARK=RGBColor(0x2D,0x00,0x4B)),
+    "dark": dict(
+        PRIMARY=RGBColor(0xF9,0x61,0x67), SECONDARY=RGBColor(0x1A,0x1A,0x2E),
+        ACCENT=RGBColor(0xF9,0xE7,0x95),  LIGHT=RGBColor(0x44,0x44,0x66),
+        BG=RGBColor(0x16,0x21,0x3E),      DARK=RGBColor(0x0F,0x0F,0x1A)),
+    "sunrise": dict(
+        PRIMARY=RGBColor(0xFF,0x6B,0x35), SECONDARY=RGBColor(0xC1,0x12,0x1F),
+        ACCENT=RGBColor(0xFF,0xE0,0x66),  LIGHT=RGBColor(0xFF,0xCC,0xA1),
+        BG=RGBColor(0xFF,0xF8,0xF0),      DARK=RGBColor(0x6B,0x0F,0x0F)),
+    "slate": dict(
+        PRIMARY=RGBColor(0x46,0x7F,0xFF), SECONDARY=RGBColor(0x1E,0x2D,0x40),
+        ACCENT=RGBColor(0xA8,0xD8,0xFF),  LIGHT=RGBColor(0xD0,0xE8,0xFF),
+        BG=RGBColor(0xF2,0xF5,0xFF),      DARK=RGBColor(0x0D,0x1B,0x2A)),
+    "mint": dict(
+        PRIMARY=RGBColor(0x00,0xB4,0x9A), SECONDARY=RGBColor(0x00,0x63,0x58),
+        ACCENT=RGBColor(0xB2,0xF5,0xEA),  LIGHT=RGBColor(0xCC,0xF9,0xF4),
+        BG=RGBColor(0xF0,0xFD,0xFB),      DARK=RGBColor(0x00,0x3B,0x36)),
+    "crimson": dict(
+        PRIMARY=RGBColor(0xC0,0x39,0x2B), SECONDARY=RGBColor(0x7B,0x24,0x1C),
+        ACCENT=RGBColor(0xF9,0xE7,0x95),  LIGHT=RGBColor(0xF5,0xB7,0xB1),
+        BG=RGBColor(0xFD,0xF2,0xF2),      DARK=RGBColor(0x4A,0x00,0x00)),
+    "golden": dict(
+        PRIMARY=RGBColor(0xF3,0x9C,0x12), SECONDARY=RGBColor(0x87,0x55,0x00),
+        ACCENT=RGBColor(0xFF,0xF0,0x8A),  LIGHT=RGBColor(0xFF,0xE5,0xA0),
+        BG=RGBColor(0xFF,0xFB,0xF0),      DARK=RGBColor(0x4A,0x2C,0x00)),
+}
+WHITE = RGBColor(0xFF,0xFF,0xFF)
+OFFWH = RGBColor(0xF4,0xF6,0xFB)
+
+# Active theme colours — swapped in by generate_slides()
+_T = THEMES["classic"]
+def _p(): return _T["PRIMARY"]
+def _s(): return _T["SECONDARY"]
+def _a(): return _T["ACCENT"]
+def _l(): return _T["LIGHT"]
+def _bg(): return _T["BG"]
+def _dk(): return _T["DARK"]
+
+# Legacy aliases so existing builders keep working
 CORAL   = RGBColor(0xF9, 0x61, 0x67)
 NAVY    = RGBColor(0x2F, 0x3C, 0x7E)
 GOLD    = RGBColor(0xF9, 0xE7, 0x95)
 DARK    = RGBColor(0x1A, 0x1A, 0x2E)
-WHITE   = RGBColor(0xFF, 0xFF, 0xFF)
-OFFWH   = RGBColor(0xF4, 0xF6, 0xFB)
-LGRAY   = RGBColor(0xEE, 0xEE, 0xEE)
 CORAL_L = RGBColor(0xFD, 0xDD, 0xE0)
 MID     = RGBColor(0x44, 0x44, 0x66)
 
-W = Inches(10)   # slide width
+W = Inches(10)
 H = Inches(5.625)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -238,6 +290,18 @@ def build_final_slide(prs, data):
 
 # ── Main entry ────────────────────────────────────────────────────────────────
 def generate_slides(data: dict) -> bytes:
+    global _T, CORAL, NAVY, GOLD, DARK, CORAL_L, OFFWH
+    # Apply theme
+    theme_name = data.get("theme", "classic")
+    _T = THEMES.get(theme_name, THEMES["classic"])
+    # Remap legacy colour names to active theme so all builders use it
+    CORAL   = _T["PRIMARY"]
+    NAVY    = _T["SECONDARY"]
+    GOLD    = _T["ACCENT"]
+    DARK    = _T["DARK"]
+    CORAL_L = _T["LIGHT"]
+    OFFWH   = _T["BG"]
+
     prs = Presentation()
     prs.slide_width  = Inches(10)
     prs.slide_height = Inches(5.625)
