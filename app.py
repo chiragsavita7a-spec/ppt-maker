@@ -156,6 +156,14 @@ def login_page():
     if request.method == "POST":
         u = request.form.get("username","").strip()
         p = request.form.get("password","")
+        # Admin: always check directly against ADMIN_PASSWORD env var
+        admin_pw = os.environ.get("ADMIN_PASSWORD","").strip()
+        if u == "admin" and admin_pw and p == admin_pw:
+            session["username"] = "admin"
+            session["name"] = "Administrator"
+            session["role"] = "admin"
+            return redirect(url_for("index"))
+        # Other users: check users.json with hashed passwords
         users = load_users()
         usr = users.get(u)
         if usr and check_password_hash(usr["password"], p):
