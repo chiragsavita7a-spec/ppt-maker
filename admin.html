@@ -1,107 +1,179 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Panel — PPT Maker</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel — PPTex</title>
 <style>
-:root{--coral:#F96167;--navy:#2F3C7E;--gold:#F9E795;--dark:#1A1A2E;--bg:#F4F6FB}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Calibri,Arial,sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-.hlogo{display:flex;align-items:center;gap:10px}
-.hicon{width:36px;height:36px;background:var(--coral);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
-h1{font-size:18px}
-.nav a{color:#ccd;font-size:13px;text-decoration:none;padding:5px 10px;border-radius:6px;margin-left:6px}
-.nav a:hover{background:rgba(255,255,255,.1)}
-main{padding:20px;max-width:780px;margin:0 auto;width:100%}
-.card{background:#fff;border-radius:12px;box-shadow:0 3px 16px rgba(0,0,0,.08);padding:22px;margin-bottom:18px}
-h2{font-size:17px;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid var(--gold)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-@media(max-width:500px){.form-row{grid-template-columns:1fr}}
-label{display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
-input,select{width:100%;padding:9px 11px;border:1.5px solid #dde1f0;border-radius:7px;font-size:14px;color:var(--dark);outline:none;transition:.2s}
-input:focus,select:focus{border-color:var(--coral)}
-.btn{padding:9px 16px;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
-.bc{background:var(--coral);color:#fff}.bc:hover{background:#e84d53}
-.bn{background:var(--navy);color:#fff}.bn:hover{background:#1f2b6b}
-.br{background:#e74c3c;color:#fff}.br:hover{background:#c0392b}
-.bsm{padding:5px 11px;font-size:12px}
-table{width:100%;border-collapse:collapse;margin-top:6px}
-th{background:var(--bg);padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px}
-td{padding:10px 12px;border-bottom:1px solid #f0f2f8;font-size:13px;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-.rt{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}
-.ra{background:#fde8e8;color:#c0392b}.rte{background:#e8f4fd;color:var(--navy)}
-.msg{padding:9px 13px;border-radius:8px;font-size:13px;margin-bottom:11px;display:none}
-.ok{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
-.err{background:#fde8e8;color:#c62828;border:1px solid #ef9a9a}
-.td-actions{display:flex;gap:6px;flex-wrap:wrap}
-</style></head><body>
+  :root{--coral:#F96167;--navy:#2F3C7E;--gold:#F9E795;--dark:#1A1A2E;--bg:#F4F6FB}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Calibri,Arial,sans-serif;background:var(--bg);min-height:100vh}
+  header{background:var(--navy);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;background:var(--coral);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  header h1{font-size:19px;font-weight:700;flex:1}
+  header a{color:var(--gold);font-size:12px;text-decoration:none}
+  .wrap{max-width:820px;margin:32px auto;padding:0 16px}
+  .card{background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.09);padding:28px 32px;margin-bottom:24px}
+  .card h2{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--bg)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  label{display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  input[type=text],input[type=password],select{width:100%;padding:9px 11px;border:1.5px solid #dde1f0;border-radius:7px;font-size:14px;color:var(--dark);outline:none;transition:.2s}
+  input:focus,select:focus{border-color:var(--coral)}
+  .btn{padding:10px 18px;background:var(--coral);color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover{background:#e84d53}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .btn-navy{background:var(--navy)}
+  .btn-navy:hover{background:#1f2b6b}
+  .btn-del{background:#e74c3c}
+  .btn-del:hover{background:#c0392b}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 10px;background:var(--bg);color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  td{padding:10px 10px;border-bottom:1px solid #f0f1f8;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+  .badge-admin{background:#2F3C7E;color:#fff}
+  .badge-teacher{background:#e8f5e9;color:#2e7d32}
+  .toast{position:fixed;top:20px;right:20px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;display:none;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+  .api-status{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-left:8px}
+  .api-on{background:#e8f5e9;color:#2e7d32}
+  .api-off{background:#fff0f0;color:#c33}
+  .full{grid-column:1/-1}
+</style>
+</head>
+<body>
 <header>
-  <div class="hlogo">
-    <div class="hicon">⚙️</div>
-    <div><h1>Admin Panel</h1></div>
-  </div>
-  <nav class="nav">
-    <a href="/">🏠 Tool</a>
-    <a href="/logout" style="color:#faa">Sign out</a>
-  </nav>
+  <div class="logo">⚙️</div>
+  <h1>Admin Panel</h1>
+  <a href="/">← Back to Tool</a>&nbsp;&nbsp;
+  <a href="/logout">Logout</a>
 </header>
-<main>
-<div class="card">
-  <h2>🔑 Anthropic API Key</h2>
-  <p style="font-size:13px;color:#666;margin-bottom:13px">Set once — all teachers use it automatically. Leave blank if teachers enter their own.</p>
-  <div id="keyMsg" class="msg"></div>
-  <div style="display:flex;gap:10px;align-items:flex-end">
-    <div style="flex:1"><label>API Key</label><input type="password" id="apiKeyInput" value="{{ api_key }}" placeholder="sk-ant-..."></div>
-    <button class="btn bc" onclick="saveKey()">Save</button>
+
+<div class="wrap">
+
+  <!-- API Key -->
+  <div class="card">
+    <h2>Anthropic API Key <span class="api-status" id="apiStatus">checking…</span></h2>
+    <p style="font-size:13px;color:#666;margin-bottom:14px">Set this once — all teachers will use it automatically. Get a free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--coral)">console.anthropic.com</a></p>
+    <div style="display:flex;gap:10px">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="flex:1">
+      <button class="btn btn-navy" onclick="setApiKey()">Save Key</button>
+    </div>
   </div>
-</div>
-<div class="card">
-  <h2>➕ Add Teacher Account</h2>
-  <div id="addMsg" class="msg"></div>
-  <div class="form-row">
-    <div><label>Full Name</label><input type="text" id="newName" placeholder="e.g. Ms. Priya Sharma"></div>
-    <div><label>Username</label><input type="text" id="newUser" placeholder="e.g. priya.sharma"></div>
-    <div><label>Password</label><input type="password" id="newPass" placeholder="Set a password"></div>
-    <div><label>Role</label><select id="newRole"><option value="teacher">Teacher</option><option value="admin">Admin</option></select></div>
+
+  <!-- Add Teacher -->
+  <div class="card">
+    <h2>Add Teacher Account</h2>
+    <div class="grid2">
+      <div>
+        <label>Full Name</label>
+        <input type="text" id="newName" placeholder="e.g. Ms. Priya Sharma">
+      </div>
+      <div>
+        <label>Username</label>
+        <input type="text" id="newUsername" placeholder="e.g. priya.sharma">
+      </div>
+      <div>
+        <label>Password</label>
+        <input type="password" id="newPassword" placeholder="Choose a password">
+      </div>
+      <div>
+        <label>Role</label>
+        <select id="newRole">
+          <option value="teacher">Teacher</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="full">
+        <button class="btn" onclick="addUser()">+ Add Account</button>
+      </div>
+    </div>
   </div>
-  <button class="btn bc" onclick="addUser()">➕ Add Account</button>
+
+  <!-- User List -->
+  <div class="card">
+    <h2>All Accounts</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+
 </div>
-<div class="card">
-  <h2>👥 All Accounts</h2>
-  <div id="delMsg" class="msg"></div>
-  <table>
-    <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
-    <tbody id="ut">
-    {% for uname, udata in users.items() %}
-    <tr id="row-{{ uname }}">
-      <td>{{ udata.name }}</td>
-      <td><code>{{ uname }}</code></td>
-      <td><span class="rt {% if udata.role == 'admin' %}ra{% else %}rte{% endif %}">{{ udata.role }}</span></td>
-      <td class="td-actions">
-        <button class="btn bn bsm" onclick="resetPw('{{ uname }}')">Reset PW</button>
-        {% if uname != 'admin' %}<button class="btn br bsm" onclick="delUser('{{ uname }}')">Delete</button>{% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
-</main>
+
+<div class="toast" id="toast"></div>
+
 <script>
-function showMsg(id,msg,ok){const el=document.getElementById(id);el.textContent=msg;el.className='msg '+(ok?'ok':'err');el.style.display='block';setTimeout(()=>el.style.display='none',3500)}
-async function saveKey(){const key=document.getElementById('apiKeyInput').value.trim();const r=await fetch('/admin/set-api-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});const d=await r.json();showMsg('keyMsg',d.ok?'✅ API key saved!':'❌ '+d.error,d.ok)}
-async function addUser(){
-  const name=document.getElementById('newName').value.trim();
-  const username=document.getElementById('newUser').value.trim();
-  const password=document.getElementById('newPass').value.trim();
-  const role=document.getElementById('newRole').value;
-  if(!username||!password){showMsg('addMsg','Username and password required',false);return}
-  const r=await fetch('/admin/add-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,name:name||username,role})});
-  const d=await r.json();
-  if(d.ok){showMsg('addMsg','✅ Account created: '+username,true);['newName','newUser','newPass'].forEach(id=>document.getElementById(id).value='');setTimeout(()=>location.reload(),1500)}
-  else showMsg('addMsg','❌ '+d.error,false)
+const USERS = {{user_list}};
+const API_KEY_SET = {{api_key_set}};
+
+document.getElementById("apiStatus").textContent = API_KEY_SET ? "✅ Set" : "⚠️ Not set";
+document.getElementById("apiStatus").className = "api-status " + (API_KEY_SET ? "api-on" : "api-off");
+
+function renderTable(){
+  const tb = document.getElementById("userTable");
+  tb.innerHTML = USERS.map(u => `
+    <tr>
+      <td>${esc(u.name)}</td>
+      <td><code>${esc(u.username)}</code></td>
+      <td><span class="badge badge-${u.role}">${u.role}</span></td>
+      <td style="display:flex;gap:6px">
+        ${u.username!=="admin"?`<button class="btn btn-sm btn-del" onclick="delUser('${esc(u.username)}')">Delete</button>`:""}
+        <button class="btn btn-sm btn-navy" onclick="resetPw('${esc(u.username)}')">Reset PW</button>
+      </td>
+    </tr>`).join("");
 }
-async function delUser(u){if(!confirm('Delete "'+u+'"?'))return;const r=await fetch('/admin/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u})});const d=await r.json();if(d.ok){document.getElementById('row-'+u).remove();showMsg('delMsg','✅ Deleted: '+u,true)}else showMsg('delMsg','❌ '+d.error,false)}
-async function resetPw(u){const pw=prompt('New password for "'+u+'":');if(!pw)return;const r=await fetch('/admin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:pw})});const d=await r.json();showMsg('delMsg',d.ok?'✅ Password updated for '+u:'❌ '+d.error,d.ok)}
+renderTable();
+
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";
+  setTimeout(()=>t.style.display="none",2800);
+}
+
+async function addUser(){
+  const name=document.getElementById("newName").value.trim();
+  const username=document.getElementById("newUsername").value.trim();
+  const password=document.getElementById("newPassword").value.trim();
+  const role=document.getElementById("newRole").value;
+  if(!username||!password){alert("Username and password are required");return}
+  const r=await fetch("/admin/add-user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,username,password,role})});
+  const d=await r.json();
+  if(d.error){alert(d.error);return}
+  USERS.push({name:name||username,username,role});
+  renderTable();
+  document.getElementById("newName").value="";
+  document.getElementById("newUsername").value="";
+  document.getElementById("newPassword").value="";
+  toast("✅ Account created: "+username);
+}
+
+async function delUser(username){
+  if(!confirm("Delete account: "+username+"?"))return;
+  await fetch("/admin/delete-user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username})});
+  const i=USERS.findIndex(u=>u.username===username);
+  if(i>-1)USERS.splice(i,1);
+  renderTable();toast("🗑️ Deleted: "+username);
+}
+
+async function resetPw(username){
+  const pw=prompt("New password for "+username+":");
+  if(!pw)return;
+  const r=await fetch("/admin/change-password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password:pw})});
+  const d=await r.json();
+  if(d.error){alert(d.error);return}
+  toast("🔑 Password updated for "+username);
+}
+
+async function setApiKey(){
+  const key=document.getElementById("apiKeyInput").value.trim();
+  if(!key){alert("Enter an API key first");return}
+  await fetch("/admin/set-api-key",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key})});
+  document.getElementById("apiStatus").textContent="✅ Set";
+  document.getElementById("apiStatus").className="api-status api-on";
+  document.getElementById("apiKeyInput").value="";
+  toast("✅ API key saved");
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 </script>
-</body></html>
+</body>
+</html>

@@ -1,127 +1,158 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auto PPT Maker</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PPTex for Teachers</title>
 <style>
-:root{--coral:#F96167;--navy:#2F3C7E;--gold:#F9E795;--dark:#1A1A2E;--bg:#F4F6FB}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Calibri,Arial,sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hlogo{display:flex;align-items:center;gap:10px}
-.hicon{width:38px;height:38px;background:var(--coral);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-header h1{font-size:18px;font-weight:700}
-header small{display:block;font-size:11px;color:var(--gold)}
-.nav{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.nav a{color:#ccd;font-size:13px;text-decoration:none;padding:5px 10px;border-radius:6px;white-space:nowrap}
-.nav a:hover{background:rgba(255,255,255,.12);color:#fff}
-.nav .lo{color:#faa}
-main{flex:1;padding:20px;max-width:660px;margin:0 auto;width:100%}
-.card{background:#fff;border-radius:14px;box-shadow:0 3px 18px rgba(0,0,0,.08);padding:26px 22px;margin-bottom:18px}
-.drop-zone{border:2.5px dashed #c0c8e8;border-radius:10px;padding:30px 16px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:18px;position:relative}
-.drop-zone.over,.drop-zone:hover{border-color:var(--coral);background:#fff5f5}
-.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dicon{font-size:34px;margin-bottom:7px}
-.drop-zone p{color:#666;font-size:13px;margin-top:4px}
-.fname{font-size:13px;font-weight:700;color:var(--navy);margin-top:8px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px}
-@media(max-width:480px){.grid{grid-template-columns:1fr}}
-.full{grid-column:1/-1}
-label{display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
-input[type=text],input[type=password]{width:100%;padding:10px 12px;border:1.5px solid #dde1f0;border-radius:7px;font-size:14px;color:var(--dark);outline:none;transition:.2s}
-input:focus{border-color:var(--coral)}
-.toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;cursor:pointer;user-select:none}
-.toggle input{width:16px;height:16px;accent-color:var(--coral)}
-.btn{width:100%;padding:13px;background:var(--coral);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px}
-.btn:hover{background:#e84d53;transform:translateY(-1px)}
-.btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
-.bar-wrap{height:7px;background:#e9eaf5;border-radius:99px;overflow:hidden;margin-bottom:11px}
-.bar{height:100%;background:linear-gradient(90deg,var(--coral),var(--navy));width:0%;transition:width .5s;border-radius:99px}
-.log{background:#f8f9ff;border:1.5px solid #e0e4f5;border-radius:8px;padding:11px 13px;font-size:12px;font-family:monospace;color:#334;max-height:170px;overflow-y:auto;line-height:1.85;display:none}
-.dl{display:none;width:100%;margin-top:13px;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:.15s}
-.dl:hover{background:#1f2b6b;transform:translateY(-1px)}
-.hint{font-size:11px;color:#999;margin-top:8px;text-align:center;line-height:1.6}
-.hint a{color:var(--coral);text-decoration:none}
-.tag{background:var(--gold);color:var(--dark);font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:5px;vertical-align:middle}
-.progress{display:none;margin-top:18px}
-</style></head><body>
+  :root{--coral:#F96167;--navy:#2F3C7E;--gold:#F9E795;--dark:#1A1A2E;--bg:#F4F6FB}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Calibri,Arial,sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  header{width:100%;background:var(--navy);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:12px}
+  .logo{width:42px;height:42px;background:var(--coral);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  header h1{font-size:21px;font-weight:700}
+  header small{color:var(--gold);font-size:12px;display:block;margin-top:2px}
+  .card{background:#fff;border-radius:14px;box-shadow:0 4px 28px rgba(0,0,0,.1);padding:32px 36px;width:100%;max-width:640px;margin:32px auto}
+  .drop-zone{border:2.5px dashed #c0c8e8;border-radius:10px;padding:36px 16px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:22px;position:relative}
+  .drop-zone.over,.drop-zone:hover{border-color:var(--coral);background:#fff5f5}
+  .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .dicon{font-size:38px;margin-bottom:8px}
+  .drop-zone p{color:#666;font-size:13px;margin-top:5px}
+  .fname{font-size:14px;font-weight:700;color:var(--navy);margin-top:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px}
+  .full{grid-column:1/-1}
+  label{display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+  input[type=text],input[type=password]{width:100%;padding:10px 12px;border:1.5px solid #dde1f0;border-radius:7px;font-size:14px;color:var(--dark);outline:none;transition:.2s}
+  input:focus{border-color:var(--coral)}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;cursor:pointer;user-select:none}
+  .toggle input{width:16px;height:16px;accent-color:var(--coral);cursor:pointer}
+  .btn{width:100%;padding:14px;background:var(--coral);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px;letter-spacing:.2px}
+  .btn:hover{background:#e84d53;transform:translateY(-1px)}
+  .btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+  .progress{display:none;margin-top:22px}
+  .bar-wrap{height:8px;background:#e9eaf5;border-radius:99px;overflow:hidden;margin-bottom:13px}
+  .bar{height:100%;background:linear-gradient(90deg,var(--coral),var(--navy));width:0%;transition:width .5s;border-radius:99px}
+  .log{background:#f8f9ff;border:1.5px solid #e0e4f5;border-radius:8px;padding:12px 14px;font-size:12px;font-family:monospace;color:#334;max-height:190px;overflow-y:auto;line-height:1.85}
+  .dl{display:none;width:100%;margin-top:14px;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:.15s;letter-spacing:.2px}
+  .dl:hover{background:#1f2b6b;transform:translateY(-1px)}
+  .hint{font-size:11px;color:#999;margin-top:9px;text-align:center;line-height:1.6}
+  .hint a{color:var(--coral);text-decoration:none}
+  .tag{background:var(--gold);color:var(--dark);font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+  footer{margin-top:auto;padding:20px;color:#bbb;font-size:11px;text-align:center}
+  .step{display:flex;align-items:center;gap:8px;font-size:12px;color:#888;margin-top:6px}
+  .step-num{width:20px;height:20px;border-radius:50%;background:var(--coral);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
+</head>
+<body>
 <header>
-  <div class="hlogo">
-    <div class="hicon">🎓</div>
-    <div><h1>Auto PPT Maker</h1><small>Hi, {{ username }}!</small></div>
+  <div class="logo">🎓</div>
+  <div>
+    <h1>PPTex</h1>
+    <small>Upload any lesson file → get a polished presentation</small>
   </div>
-  <nav class="nav">
-    {% if is_admin %}<a href="/admin">⚙️ Admin</a>{% endif %}
-    <a href="/logout" class="lo">Sign out</a>
-  </nav>
+  <!--ADMIN_LINK-->
 </header>
-<main>
+
 <div class="card">
   <div class="drop-zone" id="dz">
     <input type="file" id="fi" accept=".pdf,.docx,.txt,.md">
     <div class="dicon">📄</div>
-    <p><strong>Tap or drag</strong> your lesson file here</p>
-    <p style="font-size:11px;color:#aaa;margin-top:4px">PDF · Word (.docx) · Text (.txt)</p>
+    <p><strong>Drag &amp; drop</strong> your lesson file here or <strong>click to browse</strong></p>
+    <p style="margin-top:5px;font-size:11px;color:#aaa">Supports: PDF &nbsp;·&nbsp; Word (.docx) &nbsp;·&nbsp; Text (.txt)</p>
     <div class="fname" id="fn"></div>
   </div>
+
   <div class="grid">
     <div class="full">
-      <label>Topic <span class="tag">optional — auto-detected</span></label>
-      <input type="text" id="topic" placeholder="e.g. Photosynthesis, French Revolution…">
+      <label>Topic <span class="tag">optional — auto-detected from file</span></label>
+      <input type="text" id="topic" placeholder="e.g. Photosynthesis, World War II, Fractions…">
     </div>
-    <div><label>Subject</label><input type="text" id="subject" placeholder="e.g. Biology"></div>
-    <div><label>Grade / Level</label><input type="text" id="grade" placeholder="e.g. 8th Grade"></div>
-    <div class="full">
-      <label>API Key <span class="tag">optional — use server key if blank</span></label>
-      <input type="password" id="apiKey" placeholder="sk-ant-... Leave blank if admin has set one">
+    <div>
+      <label>Subject</label>
+      <input type="text" id="subject" placeholder="e.g. Biology">
+    </div>
+    <div>
+      <label>Grade / Level</label>
+      <input type="text" id="grade" placeholder="e.g. 8th Grade">
     </div>
     <div class="full">
-      <label class="toggle"><input type="checkbox" id="imgs" checked> Fetch relevant images (needs internet)</label>
+      <label>Anthropic API Key <span class="tag">for AI slide structuring</span></label>
+      <input type="password" id="apiKey" placeholder="sk-ant-... (optional — get free at console.anthropic.com)">
+    </div>
+    <div class="full">
+      <label class="toggle">
+        <input type="checkbox" id="imgs" checked>
+        Automatically fetch relevant images (requires internet)
+      </label>
     </div>
   </div>
+
   <button class="btn" id="btn" disabled>✨ Generate Presentation</button>
-  <p class="hint">No API key? Works without one. <a href="https://console.anthropic.com" target="_blank">Get a free key →</a></p>
+  <p class="hint">
+    No API key? The tool still works — it structures slides directly from your file.<br>
+    With a key: AI creates smarter, better-organised slides.
+    <a href="https://console.anthropic.com" target="_blank">Get a free key →</a>
+  </p>
+
   <div class="progress" id="prog">
     <div class="bar-wrap"><div class="bar" id="bar"></div></div>
     <div class="log" id="log"></div>
   </div>
   <a class="dl" id="dl">⬇️ Download Presentation (.pptx)</a>
 </div>
-</main>
+
+<footer>PPTex &nbsp;·&nbsp; Built for teachers</footer>
+
 <script>
 const dz=document.getElementById('dz'),fi=document.getElementById('fi'),
       fn=document.getElementById('fn'),btn=document.getElementById('btn'),
       prog=document.getElementById('prog'),bar=document.getElementById('bar'),
       logEl=document.getElementById('log'),dl=document.getElementById('dl');
 let file=null;
+
 fi.onchange=e=>pick(e.target.files[0]);
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('over')};
 dz.ondragleave=()=>dz.classList.remove('over');
 dz.ondrop=e=>{e.preventDefault();dz.classList.remove('over');pick(e.dataTransfer.files[0])};
-function pick(f){if(!f)return;file=f;fn.textContent='✅ '+f.name;btn.disabled=false}
+
+function pick(f){
+  if(!f)return; file=f;
+  fn.textContent='✅ '+f.name; btn.disabled=false;
+}
+
 btn.onclick=async()=>{
-  if(!file)return; btn.disabled=true; dl.style.display='none';
-  prog.style.display='block'; logEl.style.display='block'; logEl.innerHTML=''; bar.style.width='8%';
+  if(!file)return;
+  btn.disabled=true; dl.style.display='none';
+  prog.style.display='block'; logEl.innerHTML=''; bar.style.width='8%';
+
   const key=document.getElementById('apiKey').value.trim();
+  if(key) await fetch('/set_key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+
   const fd=new FormData();
   fd.append('file',file);
   fd.append('topic',document.getElementById('topic').value.trim());
   fd.append('subject',document.getElementById('subject').value.trim());
   fd.append('grade',document.getElementById('grade').value.trim());
   fd.append('images',document.getElementById('imgs').checked?'true':'false');
-  if(key)fd.append('api_key',key);
+
   const res=await fetch('/generate',{method:'POST',body:fd});
   const data=await res.json();
   if(data.error){logEl.innerHTML='❌ '+esc(data.error);btn.disabled=false;return}
   bar.style.width='30%'; poll(data.job_id);
 };
+
 async function poll(id){
   const r=await fetch('/status/'+id);
   const {status,log}=await r.json();
-  logEl.innerHTML=log.map(esc).join('<br>'); logEl.scrollTop=logEl.scrollHeight;
+  logEl.innerHTML=log.map(esc).join('<br>');
+  logEl.scrollTop=logEl.scrollHeight;
   bar.style.width={running:'65',done:'100',error:'100'}[status]+'%';
-  if(status==='running')setTimeout(()=>poll(id),1500);
+  if(status==='running') setTimeout(()=>poll(id),1500);
   else if(status==='done'){dl.href='/download/'+id;dl.style.display='block';btn.disabled=false}
-  else{logEl.innerHTML+='<br>❌ Something went wrong.';btn.disabled=false}
+  else{logEl.innerHTML+='<br>❌ Something went wrong. Check the terminal for details.';btn.disabled=false}
 }
+
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 </script>
-</body></html>
+</body>
+</html>
